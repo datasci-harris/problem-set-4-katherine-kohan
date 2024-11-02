@@ -32,7 +32,8 @@ Please refer to the minilesson on code style
 3. Partner 1 will accept the `ps4` and then share the link it creates with their partner. You can only share it with one partner so you will not be able to change it after your partner has accepted. 
 4. "This submission is our work alone and complies with the 30538 integrity policy." Add your initials to indicate your agreement: **KT** **KC**
 5. "I have uploaded the names of anyone else other than my partner and I worked with on the problem set **[here](https://docs.google.com/forms/d/185usrCREQaUbvAXpWhChkjghdGgmAZXA3lPWpXLLsts/edit)**"  (1 point)
-6. Late coins used this pset: **0** Late coins left after submission: **2**
+6. Katherine: Late coins used this pset: **1** Late coins left after submission: **1**
+    - Kohan: Late coins used this pset: **1** Late coins left after submission: **3**
 7. Knit your `ps4.qmd` to an PDF file to make `ps4.pdf`, 
     * The PDF should not be more than 25 pages. Use `head()` and re-size figures when appropriate. 
 8. (Partner 1): push  `ps4.qmd` and `ps4.pdf` to your github repo.
@@ -56,17 +57,18 @@ warnings.filterwarnings('ignore')
 I pulled variables PRVDR_CTGRY_SBTYP_CD (provider subtype code), PRVDR_CTGRY_CD (provider category code), FAC_NAME (facility name), PRVDR_NUM (CMS Certification Number), PGM_TRMNTN_CD (termination code), and ZIP_CD (zipcode). 
 
 2. 
-    a. 
-    ```{python}
-    #import 2016Q4 data
-    pos2016 = pd.read_csv("/Users/kohanchen/Documents/Fall 2024/student30538/problem_sets/ps4/pos2016.csv")
-    ```
+a. 
+```{python}
+#import 2016Q4 data
+pos2016 = pd.read_csv("/Users/kohanchen/Documents/Fall 2024/student30538/problem_sets/ps4/pos2016.csv")
+```
 
-    ```{python}
-    #filter the data by short term and report number of observations 
-    shrt_2016 = pos2016[(pos2016["PRVDR_CTGRY_SBTYP_CD"]== 1) & (pos2016["PRVDR_CTGRY_CD"]== 1)]
-    print(f"{shrt_2016.shape[0]} hospitals are are reported in this data.")
-    ```
+```{python}
+#filter the data by short term and report number of observations 
+shrt_2016 = pos2016[(pos2016["PRVDR_CTGRY_SBTYP_CD"]== 1) & (pos2016["PRVDR_CTGRY_CD"]== 1)]
+print(f"{shrt_2016.shape[0]} hospitals are are reported in this data.")
+```
+
 This number makes general sense since it reduced the total rows of over 141k in the total 2016 dataset to only over 7000, meaning that only a proportion of these hospitals fit the filter of short-term acute care hospitals. However, there could still be repetitions, since it was not guaranteed that each row represents one hospital. 
 
     b.
@@ -105,12 +107,19 @@ observations_by_year = shrt_combined.groupby("Year").size().reset_index(name = "
 
 ```{python}
 #create a bar chart for the number of observations per year
-chart_observations_year = alt.Chart(observations_by_year).mark_bar().encode(
-    alt.X("Year:O", title = "Year"),
-    alt.Y("count:Q", title = "Number of Hospitals")
-).properties(width = 300, height = 200)
+import matplotlib.pyplot as plt
 
-chart_observations_year
+plt.figure(figsize=(8, 5))
+plt.bar(observations_by_year['Year'].astype(int), observations_by_year['count'])  # Convert to int here
+plt.title('Number of Hospital Closures by Year')
+plt.xlabel('Year')
+plt.ylabel('Number of Hospitals')
+
+plt.gca().xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x)}'))
+
+plt.tight_layout()
+plt.show()
+
 ```
 4. 
     a.
@@ -122,12 +131,23 @@ observations_unique = shrt_unique.groupby("Year").size().reset_index(name = "cou
 
 
 ```{python}
-chart_unique_year = alt.Chart(observations_unique).mark_bar().encode(
-    alt.X("Year:O", title = "Year"),
-    alt.Y("count:Q", title = "Number of Hospitals")
-).properties(width = 300, height = 200)
+plt.figure(figsize=(10, 6))
+plt.bar(observations_unique['Year'].astype(int), observations_unique['count'])  # Convert to int here
 
-chart_unique_year
+# Customize the chart
+plt.title('Number of Hospitals by Year')
+plt.xlabel('Year')
+plt.ylabel('Number of Hospitals')
+
+# Format x-axis to show integers
+plt.gca().xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x)}'))
+
+for i, v in enumerate(observations_unique['count']):
+    plt.text(observations_unique['Year'].iloc[i].astype(int), v, format(v, ','), 
+             ha='center', va='bottom')
+
+plt.tight_layout()
+plt.show()
 ```
 
     b. There was no change after the dataset was fiiltered by the CMS certification number. This means that there were no replications and the data sets were already structured by CMS certification number. 
@@ -143,7 +163,7 @@ active_2017 = shrt_2017[shrt_2017["PGM_TRMNTN_CD"]==0]
 active_2018 = shrt_2018[shrt_2018["PGM_TRMNTN_CD"]==0]
 active_2019 = shrt_2019[shrt_2019["PGM_TRMNTN_CD"]==0]
 
-#standardize the zip codes so that they are 5 digit integers identified as strings
+#standardize the zip 
 def standardize_zip(df):
     df = df.copy()
     df['ZIP_CD'] = df['ZIP_CD'].astype(float).astype(int).astype(str).str.zfill(5)
